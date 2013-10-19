@@ -14,6 +14,7 @@ version 1.0: Added database of Samuel L. Jackson-like tweets and integrated a ra
 version 1.1: Modified the timing of some tweets.
 version 1.2: App now stores previous conditions to prevent non-helpful tweets (we don't need to know that it's Party Cloudy 15 times a day).
              Now the currentConditions() function checks the conditions from 1 hour ago and will only tweet if the conditions have changed.
+version 1.3: Added wind gusts to currentWind()
 
 */
 
@@ -284,17 +285,18 @@ function currentWind() {
   //
   //
   // get current wind speed
-  // if over a certain speed, comment
-  // if under a certain speed, ignore
   //
   //
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("**Secret Code Here**");
   var sheet = ss.getSheets()[0];
   var cW = sheet.getRange(2, 2); //row #, column #
   var currentWind = cW.getValue();
+  var cG = sheet.getRange(2, 7);
+  var currentGust = cG.getValue();
   Logger.log(currentWind);
+  Logger.log(currentGust);
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("**Secret Code Here**");
   var sheet = ss.getSheets()[2];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -309,7 +311,7 @@ function currentWind() {
   var cC2 = sheet2.getRange(quoteNumber2, 1);
   var ccQuote2 = cC2.getValue();
   
-  var tweet = Math.round(currentWind) + " mph winds " +ccQuote2 + ". " + ccQuote + " #chicago #weather";
+  var tweet = Math.round(currentWind) + " mph winds " + ccQuote2 + ", gusts up to " + Math.round(currentGust) + " mph. " + ccQuote + " #chicago #weather";
   Logger.log(tweet);
     
   sendTweet(tweet);
