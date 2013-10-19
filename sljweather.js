@@ -1,3 +1,13 @@
+/* 
+Concept and code by BIGnimbus
+OAuth() and sendTweet() functions have been heavily borrowed from Amit Agarwal @labnol.
+
+version 1: Set up private tweets, sent dummy tweets
+version 2: Added weather underground API scraper, fed to outside spreadsheet and connected to the various weather functions.
+version 3: Added database of Samuel L. Jackson-like tweets and integrated a random quote selector
+
+*/
+
 function start() {
 
   var TWITTER_CONSUMER_KEY     = "Secret Code Here";
