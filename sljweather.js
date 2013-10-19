@@ -1,10 +1,19 @@
 /* 
 Concept and code by BIGnimbus
-OAuth() and sendTweet() functions have been heavily borrowed from Amit Agarwal @labnol.
+OAuth(), encodeString() and sendTweet() functions have been heavily borrowed from Amit Agarwal @labnol.
 
-version 1: Set up private tweets, sent dummy tweets
-version 2: Added weather underground API scraper, fed to outside spreadsheet and connected to the various weather functions.
-version 3: Added database of Samuel L. Jackson-like tweets and integrated a random quote selector
+TO DO:
+- store keys, tokens, etc. in a database to improve security
+
+HISTORY:
+
+version 0.1: Set up private tweets, sent dummy tweets
+version 0.2: Added weather underground API scraper script (wunderground.js) and database.
+version 0.3: Set up so that each type of weather tweet would draw a random SLJ quote from a pre-filled database
+version 1.0: Added database of Samuel L. Jackson-like tweets and integrated a random quote selector, set all tweets to public
+version 1.1: Modified the timing of some tweets.
+version 1.2: App now stores previous conditions to prevent non-helpful tweets (we don't need to know that it's Party Cloudy 15 times a day).
+             Now the currentConditions() function checks the conditions from 1 hour ago and will only tweet if the conditions have changed.
 
 */
 
@@ -311,9 +320,9 @@ function currentConditions() {
   //
   // get current conditions
   // comment on it
-  // if extra heat index or wind chill, send to currentWindChill() or currentHeatIndex()
   //
   //
+  
   var ss = SpreadsheetApp.openById("**SecretCodeHere**");
   var sheet = ss.getSheets()[0];
   var cC = sheet.getRange(2, 4); //row #, column #
@@ -329,16 +338,24 @@ function currentConditions() {
   var max2 = sheet2.getLastRow(); //find range of rows w/ quotes
   var quoteNumber2=Math.floor((Math.random()*max2)+1); //get random row
   
+  var sheet3 = ss.getSheets()[7];
+  var pC = sheet3.getRange(1,1); //get conditions from an hour ago
+  var previousConditions = pC.getValue();
+  
   var cC = sheet.getRange(quoteNumber, 1); //row #, column #
   var ccQuote = cC.getValue(); //get quote
   
   var cC2 = sheet2.getRange(quoteNumber2, 1);
-  var ccQuote2 = cC2.getValue();
+  var ccQuote2 = cC2.getValue(); //get "right now" synonym
   
   var tweet = currentConditions + " " + ccQuote2 + ". " + ccQuote + " #chicago #weather";
-  Logger.log(tweet);
-    
+  //Logger.log(tweet);
+  sheet3.appendRow([currentConditions]);
+  sheet3.deleteRow(1);
+  
+  if (previousConditions !== currentConditions){ //only tweet if conditions have changed
   sendTweet(tweet);
+  }
 }
 
 function getQuote() {
