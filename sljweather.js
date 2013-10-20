@@ -352,10 +352,10 @@ function currentConditions() {
   
   var tweet = currentConditions + " " + ccQuote2 + ". " + ccQuote + " #chicago #weather";
   //Logger.log(tweet);
-  sheet3.appendRow([currentConditions]);
-  sheet3.deleteRow(1);
   
   if (previousConditions !== currentConditions){ //only tweet if conditions have changed
+  sheet3.appendRow([currentConditions]);
+  sheet3.deleteRow(1);
   sendTweet(tweet);
   }
 }
