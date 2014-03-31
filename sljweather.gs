@@ -1,9 +1,10 @@
 /* 
-Concept and code by BIGnimbus
+
+Concept and code by Jeffrey Auriemma
 OAuth(), encodeString() and sendTweet() functions have been heavily borrowed from Amit Agarwal @labnol.
 
 TO DO:
-- store keys, tokens, etc. in a database to improve security
+- combine duplicate functions
 
 HISTORY:
 
@@ -14,19 +15,23 @@ version 1.0: Added database of Samuel L. Jackson-like tweets and integrated a ra
 version 1.1: Modified the timing of some tweets.
 version 1.2: App now stores previous conditions to prevent non-helpful tweets (we don't need to know that it's Party Cloudy 15 times a day).
              Now the currentConditions() function checks the conditions from 1 hour ago and will only tweet if the conditions have changed.
-version 1.3: Added wind gusts to currentWind()
+version 1.3.0: Added wind gusts to currentWind()
+version 1.3.1: Bug fix in currentConditions()
+version 1.4.0: Added wind chill and heat index in currentConditions() function
+version 1.4.1: Edited the currentWind() function to only tweet gust speed if it differs from sustained wind speed.
+version 1.4.2: Edited the currentWind() function to only tweet wind speed if gusts are above 5mph.
 
 */
 
 function start() {
 
-  var TWITTER_CONSUMER_KEY     = "Secret Code Here";
+  var TWITTER_CONSUMER_KEY     = "LyhmvJjwb6tFyorbZXIJmA";
   
-  var TWITTER_CONSUMER_SECRET  = "Secret Code Here";
+  var TWITTER_CONSUMER_SECRET  = "E39d4lkNtJJtdxgBTGhJMTFWE8mQUJE8oJF3eW2xo";
   
-  var TWITTER_TOKEN            = "Secret Code Here";
+  var TWITTER_TOKEN            = "1898402761-PYklBwSyxMh0iJZzGv7aBChZmJGR3G2zsyYKd20";
   
-  var TWITTER_TOKEN_SECRET     = "Secret Code Here";
+  var TWITTER_TOKEN_SECRET     = "qHl8UCZQF8iUWAr8SnkM6EcLNS8SZcyN4swtd9Yxw4";
   
   var TWITTER_HANDLE           = "sljweather";
   
@@ -64,24 +69,19 @@ function oAuth() {
  
 }
 
-function triage() {
-  
- var ss = SpreadsheetApp.openById("**SecretCodeHere**");
- var sheet = ss.getSheets()[2];
- var sunriseH = sheet.getRange(2, 1); //row #, column
+function triage() { 
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
+  var sheet = ss.getSheets()[2];
+  var sunriseH = sheet.getRange(2, 1); //row #, column
   var sunriseH = sunriseH.getValue();
- var sunriseM = sheet.getRange(2, 2); //get day's sunrise and sunset data
+  var sunriseM = sheet.getRange(2, 2); //get day's sunrise and sunset data
   var sunriseM = sunriseM.getValue();
- var sunsetH = sheet.getRange(2, 3);
+  var sunsetH = sheet.getRange(2, 3);
   var sunsetH = sunsetH.getValue();
- var sunsetM = sheet.getRange(2, 4);
+  var sunsetM = sheet.getRange(2, 4);
   var sunsetM = sunsetM.getValue();
-  
- var h = Utilities.formatDate(new Date(), "GMT-5", "HH");
- Logger.log(h);
-  
- var m = Utilities.formatDate(new Date(), "GMT-5", "mm");
- Logger.log(m);
+  var h = Utilities.formatDate(new Date(), "GMT-5", "HH");
+  var m = Utilities.formatDate(new Date(), "GMT-5", "mm");
   
   // if midnight, sunrise or sunset, go to midnight(), sunrise() or sunset()
   
@@ -116,6 +116,10 @@ function triage() {
   
   if (h%4==0 && m==45) currentWind();
   
+  // if every 3 hours, tweet currentRadar
+   var i = h+1;
+  if (i%3==0 && m==15); //currentRadar()
+  
   // if 3:30pm, tweet getQuote
   
   if (h==15 && m==30) getQuote();
@@ -123,10 +127,9 @@ function triage() {
 } 
 
 function sendTweet(tweet) {
-
   var options =
   {
-    "method": "POST",
+    "method": "post",
     "oAuthServiceName":"twitter",
     "oAuthUseToken":"always"    
   };
@@ -134,9 +137,7 @@ function sendTweet(tweet) {
   oAuth();
   
   var status = "https://api.twitter.com/1.1/statuses/update.json";
-  
-  status = status + "?status=" + encodeString(tweet);  
-  
+  status = status + "?status=" + encodeString(tweet); 
   try {
     var result = UrlFetchApp.fetch(status, options);
     ScriptProperties.setProperty("MAX_TWITTER_ID");
@@ -145,7 +146,6 @@ function sendTweet(tweet) {
   catch (e) {
     Logger.log(e.toString());
   }
-
 }
 
 function encodeString (q) {
@@ -177,7 +177,7 @@ function forecastToday() {
   //
   //
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
   var sheet = ss.getSheets()[1];
   var tyF;
   var todaysForecast = new Array();
@@ -190,7 +190,7 @@ function forecastToday() {
   
   //todaysForecast[0=high, 1=low, 2=conditions, 3=pop]
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[2];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -214,7 +214,7 @@ function forecastTomorrow() {
   // comment on it
   //
   //
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
   var sheet = ss.getSheets()[1];
   var tmF;
   var tomorrowsForecast = new Array();
@@ -227,15 +227,13 @@ function forecastTomorrow() {
   
   //tomorrowsForecast[0=high, 1=low, 2=conditions, 3=pop]
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[1];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
   
   var tF = sheet.getRange(quoteNumber, 1); //row #, column #
   var tfQuote = tF.getValue(); //get quote
-  
-  
   
   var tweet = tfQuote + " Tomorrow's  #chicago #forecast: " + tomorrowsForecast[2] + ". " + tomorrowsForecast[0] + "/" + tomorrowsForecast[1] + ". " + tomorrowsForecast[3] + "% precip.";
   
@@ -253,13 +251,15 @@ function currentTemp() {
   //
   //
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
   var sheet = ss.getSheets()[0];
   var cT = sheet.getRange(2, 3); //row #, column #
+  var windChill = sheet.getRange(2, 6).getValue();
+  var heatIndex = sheet.getRange(2, 5).getValue();
   var currentTemperature = cT.getValue();
   Logger.log(currentTemperature);
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[2];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -274,7 +274,22 @@ function currentTemp() {
   var cC2 = sheet2.getRange(quoteNumber2, 1);
   var ccQuote2 = cC2.getValue();
   
-  var tweet = Math.round(currentTemperature) + " F " + ccQuote2 + ". " + ccQuote + " #chicago #weather";
+  var tweet = Math.round(currentTemperature) + " F " + ccQuote2;
+  if (windChill !== "undefined"){
+    if (windChill !== "NA"){
+    if (Math.round(windChill) !== Math.round(currentTemperature)){
+   tweet = tweet + ", feels like " + windChill;
+    }
+  }
+}
+  
+  if (heatIndex !== "NA"){
+    if (Math.round(heatIndex) !== Math.round(currentTemperature)){
+   tweet = tweet + ", feels like " + heatIndex; 
+    }
+  }
+  
+  tweet = tweet + ". " + ccQuote + " #chicago #weather";
   Logger.log(tweet);
     
   sendTweet(tweet);
@@ -287,7 +302,7 @@ function currentWind() {
   // get current wind speed
   //
   //
-  var ss = SpreadsheetApp.openById("**Secret Code Here**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
   var sheet = ss.getSheets()[0];
   var cW = sheet.getRange(2, 2); //row #, column #
   var currentWind = cW.getValue();
@@ -296,7 +311,7 @@ function currentWind() {
   Logger.log(currentWind);
   Logger.log(currentGust);
   
-  var ss = SpreadsheetApp.openById("**Secret Code Here**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[2];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -311,10 +326,12 @@ function currentWind() {
   var cC2 = sheet2.getRange(quoteNumber2, 1);
   var ccQuote2 = cC2.getValue();
   
-  var tweet = Math.round(currentWind) + " mph winds " + ccQuote2 + ", gusts up to " + Math.round(currentGust) + " mph. " + ccQuote + " #chicago #weather";
-  Logger.log(tweet);
-    
-  sendTweet(tweet);
+  var tweet = Math.round(currentWind) + " mph winds " + ccQuote2; 
+  //if gusts are different from sustained winds, add the gust measurement to tweet.
+  if (Math.round(currentWind) !== Math.round(currentGust)) tweet = tweet + ", gusts up to " + Math.round(currentGust) + " mph"; 
+  tweet = tweet + ". " + ccQuote + " #chicago #weather";
+  
+  if (Math.round(currentGust) >= 5) sendTweet(tweet);
 }
 
 function currentConditions() {
@@ -325,13 +342,13 @@ function currentConditions() {
   //
   //
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidHFRYXpsMFA0d0QtMHNXaEZvcE5CVVE");
   var sheet = ss.getSheets()[0];
   var cC = sheet.getRange(2, 4); //row #, column #
   var currentConditions = cC.getValue();
   Logger.log(currentConditions);
   
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[2];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -366,7 +383,7 @@ function getQuote() {
   // get quote
   //
   //
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[0];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+2); //get random row
@@ -383,7 +400,7 @@ function getQuote() {
 }
 
 function sunrise(){
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[3];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -397,7 +414,7 @@ function sunrise(){
 }
 
 function sunset(){
-  var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[4];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
@@ -411,7 +428,7 @@ function sunset(){
 }
 
 function midnight(){
- var ss = SpreadsheetApp.openById("**SecretCodeHere**");
+  var ss = SpreadsheetApp.openById("0Ah9d7kMt9JMidEd5aUFIV1BwelpoNllNTmdEOEdHamc");
   var sheet = ss.getSheets()[5];
   var max = sheet.getLastRow(); //find range of rows w/ quotes
   var quoteNumber=Math.floor((Math.random()*max)+1); //get random row
